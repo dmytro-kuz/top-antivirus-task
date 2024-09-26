@@ -220,6 +220,18 @@ body {
   }
 }
 
+.item-price-old {
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18.75px;
+  color: #929292;
+  z-index: 2;
+  position: relative;
+  bottom: -25px;
+  text-decoration: line-through;
+}
+
 .item-description {
   width: 100%;
   display: flex;
@@ -274,7 +286,8 @@ body {
 
   img {
     position: absolute;
-    right: 11px
+    right: 10px;
+    top: 10px;
   }
 }
 
@@ -310,32 +323,6 @@ body {
 
 
 
-@media (max-width: 768px) {
-  /* .navigation__list {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+@media (max-width: 768px) {}
 
-  .mcafee-section__heading {
-    font-size: 1.5rem;
-  }
-
-  .arrow-indicator {
-    font-size: 0.9rem;
-  }
-
-  .store-footer {
-    flex-direction: column;
-    align-items: center;
-  } */
-}
-
-@media (max-width: 480px) {
-  /* h1 {
-    font-size: 1.2rem;
-  }
-
-  .navigation__link {
-    padding: 0.5rem;
-  } */
-}
+@media (max-width: 480px) {}
