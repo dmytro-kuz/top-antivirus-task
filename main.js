@@ -28,29 +28,70 @@ class OfferApiService {
   }
 }
 
-class OfferCardList {
-  constructor(listElement) {
-    this.listElement = listElement; // Store the list element
+// Class to manage the arrow indicator behavior
+class ArrowIndicator {
+  constructor(arrowWrapper) {
+    this.arrowWrapper = arrowWrapper; // Store the arrow wrapper element
+    this.initEventListeners(); // Initialize event listeners
   }
 
-  // Method to fetch offers from the server
-  async fetchOffers(url) {
-    try {
-      const response = await fetch(url); // Perform the AJAX request
-      if (!response.ok) {
-        throw new Error('Network response was not ok'); // Handle errors
-      }
-      const offers = await response.json(); // Parse JSON response
-      this.renderOfferCards(offers); // Render offers on the page
-    } catch (error) {
-      console.error('Failed to fetch offers:', error); // Log errors
+  // Method to handle the click event for showing the arrow
+  handleDownloadClick() {
+    setTimeout(() => {
+      const browserClass = this.getBrowserClass();
+      const deviceClass = this.getDeviceClass();
+      this.arrowWrapper.classList.add('show-arrow', browserClass, deviceClass);
+    }, 1500); // Add class after 1.5 seconds
+  }
+
+  // Method to determine the browser class
+  getBrowserClass() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes('edg')) {
+      return 'edge';
+    } else if (userAgent.includes('chrome')) {
+      return 'chrome';
+    } else if (userAgent.includes('firefox')) {
+      return 'firefox';
+    } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+      return 'safari';
     }
+    return '';
+  }
+
+  // Method to determine the device class
+  getDeviceClass() {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    return isMobile ? 'mobile' : 'desktop';
+  }
+
+  // Initialize event listeners
+  initEventListeners() {
+    document.addEventListener('click', (event) => {
+      // Check if the click is outside the arrowWrapper
+      if (!this.arrowWrapper.contains(event.target) && this.arrowWrapper.classList.contains('show-arrow')) {
+        this.arrowWrapper.classList.add('fade-out'); // Add fade-out class
+
+        // Wait for the animation to finish before removing classes
+        setTimeout(() => {
+          this.arrowWrapper.classList.remove('show-arrow', 'fade-out'); // Remove classes
+        }, 500);
+      }
+    });
+  }
+}
+
+class OfferCardList {
+  constructor(listElement, arrowIndicator) {
+    this.listElement = listElement; // Store the list element
+    this.arrowIndicator = arrowIndicator; // Store the arrow indicator instance
   }
 
   // Method to render offer cards
   renderOfferCards(offers) {
     const html = offers.map((offer) => this.createOfferCard(offer)).join(''); // Generate HTML for each offer
     this.listElement.innerHTML = html; // Set inner HTML of the list
+    this.addDownloadEventListeners(); // Add event listeners for download buttons
   }
 
   // Method to create HTML for a single offer card
@@ -77,16 +118,26 @@ class OfferCardList {
     return `
       <li class="mcafee-list__item ${is_best ? 'best' : ''} ${discountClass}">
         <div class="item-price">$${amount} <span>/ ${licensePeriod}</span></div>
-  ${isNumber ? `<div class="item-price-old">$${fullPrice.toFixed(2)}</div>` : ''}
+        ${isNumber ? `<div class="item-price-old">$${fullPrice.toFixed(2)}</div>` : ''}
         <div class="item-description">
           <div class="description-title">${nameProd}</div>
           <div class="description-period">${license_name}</div>
-          <div class="item-button">
-            <a href="${link}" download="${name_display}"><span>Download</span> <img src="./assets/download-icon.svg" alt="download"></a>
-          </div>
+          <a href="${link}" download="${name_display}" class="item-button">
+            <div><span>Download</span> <img src="./assets/download-icon.svg" alt="download"></div>
+          </a>
         </div>
       </li>
     `;
+  }
+
+  // Method to add event listeners to download buttons
+  addDownloadEventListeners() {
+    const downloadButtons = this.listElement.querySelectorAll('.item-button');
+    downloadButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        this.arrowIndicator.handleDownloadClick();
+      });
+    });
   }
 }
 
@@ -94,13 +145,14 @@ class OfferCardList {
 class App {
   constructor(apiUrl, refs) {
     this.offerApiService = new OfferApiService(apiUrl); // Create instance of OfferApiService
-    this.offerCardList = new OfferCardList(refs.list); // Create instance of OfferCardList
+    this.arrowIndicator = new ArrowIndicator(refs.arrowWrapper); // Create instance of ArrowIndicator
+    this.offerCardList = new OfferCardList(refs.list, this.arrowIndicator); // Create instance of OfferCardList
   }
 
   // Method to initialize the app
   async init() {
     try {
-      const offers = await this.offerApiService.fetchOffers(); // Fetch offers from API
+      const offers = await this.offerApiService.fetchOffers();
       this.offerCardList.renderOfferCards(offers);
     } catch (error) {
       console.error('Error fetching offers:', error); // Log any errors
