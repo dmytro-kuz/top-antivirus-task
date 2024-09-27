@@ -68,15 +68,12 @@ class ArrowIndicator {
   // Initialize event listeners
   initEventListeners() {
     document.addEventListener('click', (event) => {
-      // Check if the click is outside the arrowWrapper
-      if (!this.arrowWrapper.contains(event.target) && this.arrowWrapper.classList.contains('show-arrow')) {
-        this.arrowWrapper.classList.add('fade-out'); // Add fade-out class
+      this.arrowWrapper.classList.add('fade-out'); // Add fade-out class
 
-        // Wait for the animation to finish before removing classes
-        setTimeout(() => {
-          this.arrowWrapper.classList.remove('show-arrow', 'fade-out'); // Remove classes
-        }, 500);
-      }
+      // Wait for the animation to finish before removing classes
+      setTimeout(() => {
+        this.arrowWrapper.classList.remove('show-arrow', 'fade-out'); // Remove classes
+      }, 500);
     });
   }
 }
@@ -147,16 +144,29 @@ class App {
     this.offerApiService = new OfferApiService(apiUrl); // Create instance of OfferApiService
     this.arrowIndicator = new ArrowIndicator(refs.arrowWrapper); // Create instance of ArrowIndicator
     this.offerCardList = new OfferCardList(refs.list, this.arrowIndicator); // Create instance of OfferCardList
+    this.loader = document.getElementById('loader');
   }
 
   // Method to initialize the app
   async init() {
+    this.showLoader();
+
     try {
       const offers = await this.offerApiService.fetchOffers();
       this.offerCardList.renderOfferCards(offers);
     } catch (error) {
       console.error('Error fetching offers:', error); // Log any errors
+    } finally {
+      this.hideLoader();
     }
+  }
+
+  showLoader() {
+    this.loader.style.display = 'block';
+  }
+
+  hideLoader() {
+    this.loader.style.display = 'none';
   }
 }
 
