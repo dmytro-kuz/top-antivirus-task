@@ -97,7 +97,8 @@ body {
   }
 
   &.chrome,
-  &.edge {
+  &.edge,
+  &.safari {
     right: 12px;
     top: 80px;
   }
